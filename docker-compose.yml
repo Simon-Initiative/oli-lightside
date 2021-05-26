@@ -1,0 +1,17 @@
+version: '3.1'
+services:
+  lightside:
+    build: .
+    image: oli/lightside
+    restart: always
+    container_name: oli-lightside
+    volumes:
+      - /oli/repository:/oli/repository
+      - /oli/superactivity/lightside/toolkits/categories:/lightside/toolkits/categories
+    ports:
+      - "8300:8000"
+    networks:
+      - lightside-net
+networks:
+  lightside-net:
+    driver: bridge
