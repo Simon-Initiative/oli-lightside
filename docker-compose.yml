@@ -7,7 +7,7 @@ services:
     container_name: oli-lightside
     volumes:
 #      - /oli/repository:/oli/repository
-      - //oli/superactivity/lightside/models:/models
+      - /oli/superactivity/lightside/models:/models
       - /oli/superactivity/lightside/toolkits/categories:/lightside/toolkits/categories
     ports:
       - "8300:8000"
