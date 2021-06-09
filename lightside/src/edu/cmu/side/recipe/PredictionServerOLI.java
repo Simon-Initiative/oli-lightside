@@ -79,7 +79,7 @@ public class PredictionServerOLI implements Container {
                 printUsage();
             }
         }
-        serve(port, 40);
+        serve(port, 30);
 
     }
 
