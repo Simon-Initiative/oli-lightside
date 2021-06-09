@@ -28,6 +28,8 @@ import org.simpleframework.transport.connect.SocketConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * loads a model trained using lightSIDE uses it to label new instances via the
@@ -208,10 +210,24 @@ public class PredictionServerOLI implements Container {
         return attached;
     }
 
+    private static Runnable pollDirectories() {
+
+        return new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("checking model folders");
+            }
+        };
+    }
+
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
             printUsage();
         }
+
+        long sleepTimeInMilli = 1000L * 5; // 5 seconds
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(pollDirectories(), sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
 
 //		initSIDE();
         int port = 8000;
