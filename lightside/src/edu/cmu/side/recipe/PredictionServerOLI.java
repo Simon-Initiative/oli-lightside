@@ -6,16 +6,6 @@ package edu.cmu.side.recipe;
 
 import edu.cmu.side.model.data.DocumentList;
 import edu.cmu.side.model.data.PredictionResult;
-import java.io.File;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.HashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 import org.simpleframework.http.Part;
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
@@ -25,9 +15,17 @@ import org.simpleframework.transport.Server;
 import org.simpleframework.transport.connect.Connection;
 import org.simpleframework.transport.connect.SocketConnection;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +41,15 @@ public class PredictionServerOLI implements Container {
     protected static Map<String, Predictor> predictors = new HashMap<String, Predictor>();
 
     private final Executor executor;
+    private boolean loadingModels = false;
+
+    public PredictionServerOLI(int size) {
+        this.executor = Executors.newFixedThreadPool(size);
+        long sleepTimeInMilli = 1000L * 10; // 5 seconds
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(this::pollDirectories, sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
+
+    }
 
     public static void serve(int port, int threads) throws Exception {
         Container container = new PredictionServerOLI(threads);
@@ -53,6 +60,50 @@ public class PredictionServerOLI implements Container {
 
         connection.connect(address);
         System.out.println("Started server on port " + port + ".");
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            printUsage();
+        }
+
+//		initSIDE();
+        int port = 8000;
+
+        //int start = 0;
+        if (args.length > 0 && !args[0].contains(":")) {
+            try {
+                //start = 1;
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                printUsage();
+            }
+        }
+        serve(port, 5);
+
+    }
+
+    /**
+     *
+     */
+    protected static void printUsage() {
+        System.out.println("usage: lightserv [port]");
+    }
+
+    /**
+     * @param modelPath
+     * @return
+     */
+    protected static Predictor attachModel(String modelPath) {
+        try {
+            System.out.println("attaching " + modelPath);
+            Predictor predict = new Predictor(modelPath, "class");
+            //predictors.put(nick, predict);
+            return predict;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -105,10 +156,6 @@ public class PredictionServerOLI implements Container {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public PredictionServerOLI(int size) {
-        this.executor = Executors.newFixedThreadPool(size);
     }
 
     protected String handleEvaluate(Request request, Response response) throws IOException {
@@ -185,10 +232,10 @@ public class PredictionServerOLI implements Container {
         }
     }
 
-    protected Predictor checkModel(String model) {	// attempt to attach a local model
+    protected Predictor checkModel(String model) {    // attempt to attach a local model
         File ft = new File(model);
         model = ft.getName();
-        if(this.predictors.containsKey(model)){
+        if (predictors.containsKey(model)) {
             return predictors.get(model);
         }
 
@@ -197,74 +244,36 @@ public class PredictionServerOLI implements Container {
         if (f.exists()) {
             attached = attachModel(f.getAbsolutePath());
             if (attached == null) {
-//                response.setCode(418);
                 throw new RuntimeException("could not load existing model for '" + model + "' -- was it trained on the latest version of LightSide?");
 
             }
-            this.predictors.put(model, attached);
+            predictors.put(model, attached);
         } else {
-//            response.setCode(404);
             System.out.println("no model available named " + model);
             throw new RuntimeException("no model available named " + model);
         }
         return attached;
     }
 
-    private static Runnable pollDirectories() {
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("checking model folders");
-            }
-        };
-    }
-
-    public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            printUsage();
-        }
-
-        long sleepTimeInMilli = 1000L * 5; // 5 seconds
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleWithFixedDelay(pollDirectories(), sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
-
-//		initSIDE();
-        int port = 8000;
-
-        //int start = 0;
-        if (args.length > 0 && !args[0].contains(":")) {
+    private void pollDirectories() {
+        System.out.println("checking model folders");
+        File modelsFolder = new File("/models");
+        if (modelsFolder.exists() && !loadingModels) {
+            File[] models = modelsFolder.listFiles();
+            loadingModels = true;
             try {
-                //start = 1;
-                port = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                printUsage();
+                for (File model : models) {
+                    if (model.isFile()) {
+                        try {
+                            checkModel(model.getName());
+                        } catch (Exception e) {
+                            System.err.println(e.getLocalizedMessage());
+                        }
+                    }
+                }
+            } finally {
+                loadingModels = false;
             }
-        }
-        serve(port, 5);
-
-    }
-
-    /**
-     *
-     */
-    protected static void printUsage() {
-        System.out.println("usage: lightserv [port]");
-    }
-
-    /**
-     * @param modelPath
-     * @return
-     */
-    protected static Predictor attachModel(String modelPath) {
-        try {
-            System.out.println("attaching " + modelPath);
-            Predictor predict = new Predictor(modelPath, "class");
-            //predictors.put(nick, predict);
-            return predict;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 }
