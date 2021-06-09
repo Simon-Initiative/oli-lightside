@@ -256,7 +256,6 @@ public class PredictionServerOLI implements Container {
     }
 
     private void pollDirectories() {
-        System.out.println("checking model folders");
         File modelsFolder = new File("/models");
         if (modelsFolder.exists() && !loadingModels) {
             File[] models = modelsFolder.listFiles();
