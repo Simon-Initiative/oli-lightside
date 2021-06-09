@@ -119,8 +119,9 @@ public class PredictionServerOLI implements Container {
 
             Predictor predictor = null;
             try {
-                predictor = checkModel(response, model);
+                predictor = checkModel(model);
             } catch (Exception ex) {
+                response.setCode(400);
                 return ex.getLocalizedMessage();
             }
             System.out.println("using model " + model + " on " + sample);
@@ -155,8 +156,9 @@ public class PredictionServerOLI implements Container {
             System.out.println("using model " + model + " on " + sample);
             Predictor predictor = null;
             try {
-                predictor = checkModel(response, model);
+                predictor = checkModel(model);
             } catch (Exception ex) {
+                response.setCode(400);
                 return ex.getLocalizedMessage();
             }
 
@@ -181,23 +183,25 @@ public class PredictionServerOLI implements Container {
         }
     }
 
-    protected Predictor checkModel(Response response, String model) {	// attempt to attach a local model
+    protected Predictor checkModel(String model) {	// attempt to attach a local model
+        File ft = new File(model);
+        model = ft.getName();
         if(this.predictors.containsKey(model)){
             return predictors.get(model);
         }
 
-        File f = new File(model);
+        File f = new File("/models", model);
         Predictor attached = null;
         if (f.exists()) {
             attached = attachModel(f.getAbsolutePath());
             if (attached == null) {
-                response.setCode(418);
+//                response.setCode(418);
                 throw new RuntimeException("could not load existing model for '" + model + "' -- was it trained on the latest version of LightSide?");
 
             }
             this.predictors.put(model, attached);
         } else {
-            response.setCode(404);
+//            response.setCode(404);
             System.out.println("no model available named " + model);
             throw new RuntimeException("no model available named " + model);
         }

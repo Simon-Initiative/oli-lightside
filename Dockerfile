@@ -2,7 +2,7 @@ FROM openjdk:8
 
 RUN mkdir /lightside
 
-RUN mkdir -p /oli/repository
+RUN mkdir -p /models
 
 COPY lightside/ /lightside/
 
