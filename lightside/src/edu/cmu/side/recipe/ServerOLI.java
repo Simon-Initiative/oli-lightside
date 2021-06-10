@@ -19,10 +19,7 @@ import io.netty.util.CharsetUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +36,7 @@ import java.util.logging.Logger;
 public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     protected static Map<String, Predictor> predictors = new HashMap<String, Predictor>();
+    protected static Set<String> processing = new HashSet<String>();
 
     Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -55,8 +53,8 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         logger.info("The url = " + request.uri());
         String answer = "There is no data, only zuul.";
         HttpResponseStatus status = HttpResponseStatus.OK;
-        try {
 
+        try {
             String target = request.uri();
             logger.info(request.method() + ": " + target);
 
@@ -72,7 +70,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         } catch (RequestException e) {
             status = e.getStatus();
             answer = e.getLocalizedMessage();
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
 
         ByteBuf content = Unpooled.copiedBuffer(answer, CharsetUtil.UTF_8);
@@ -83,7 +81,6 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         ctx.flush();
     }
 
-
     /**
      * @param modelPath
      * @return
@@ -93,16 +90,14 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             logger.info("attaching " + modelPath);
             return new Predictor(modelPath, "class");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return null;
         }
     }
 
     protected String handleEvaluate(FullHttpRequest request) throws RequestException {
         try {
-
-            Map<String, String> attribs = attribs(request);
-
+            Map<String, String> attribs = requestAttributes(request);
             String sample = attribs.get("sample").trim();
             String answer = "";
             String model = attribs.get("model").trim();
@@ -129,35 +124,15 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             return answer;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             throw new RequestException(HttpResponseStatus.BAD_REQUEST, "could not handle request: " + request.uri() +
                     "\n(urls should be of the form /evaluate)");
         }
     }
 
-    private Map<String, String> attribs(FullHttpRequest request){
-        HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(request);
-        List<InterfaceHttpData> data = postDecoder.getBodyHttpDatas();
-        Map<String, String> attribs = new HashMap<String, String>();
-        if (data != null) {
-            for (InterfaceHttpData datum : data) {
-                if (datum.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-                    Attribute attribute = (Attribute)datum;
-                    try {
-                        attribs.put(attribute.getName(), attribute.getString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        return attribs;
-    }
-
     protected String handlePredict(FullHttpRequest request) throws RequestException {
         try {
-            Map<String, String> attribs = attribs(request);
-
+            Map<String, String> attribs = requestAttributes(request);
             String sample = attribs.get("sample").trim();
             String answer = "";
             String model = attribs.get("model").trim();
@@ -185,10 +160,29 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             return answer;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             throw new RequestException(HttpResponseStatus.BAD_REQUEST, "could not handle request: " + request.uri() +
                     "\n(urls should be of the form /predict)");
         }
+    }
+
+    private Map<String, String> requestAttributes(FullHttpRequest request){
+        HttpPostRequestDecoder postDecoder = new HttpPostRequestDecoder(request);
+        List<InterfaceHttpData> data = postDecoder.getBodyHttpDatas();
+        Map<String, String> attribs = new HashMap<String, String>();
+        if (data != null) {
+            for (InterfaceHttpData datum : data) {
+                if (datum.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                    Attribute attribute = (Attribute)datum;
+                    try {
+                        attribs.put(attribute.getName(), attribute.getString());
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
+                    }
+                }
+            }
+        }
+        return attribs;
     }
 
     protected Predictor checkModel(String model) {    // attempt to attach a local model
@@ -197,6 +191,10 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         if (predictors.containsKey(model)) {
             return predictors.get(model);
         }
+        if (processing.contains(model)) {
+            throw new RuntimeException("model still processing " + model);
+        }
+        processing.add(model);
 
         File f = new File("/models", model);
         Predictor attached = null;
@@ -204,9 +202,9 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             attached = attachModel(f.getAbsolutePath());
             if (attached == null) {
                 throw new RuntimeException("could not load existing model for '" + model + "' -- was it trained on the latest version of LightSide?");
-
             }
             predictors.put(model, attached);
+            processing.remove(model);
         } else {
             logger.info("no model available named " + model);
             throw new RuntimeException("no model available named " + model);
