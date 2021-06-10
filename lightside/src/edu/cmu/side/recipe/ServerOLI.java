@@ -220,6 +220,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static void pollDirectories() {
         File modelsFolder = new File("/models");
         if (modelsFolder.exists() && !loadingModels) {
+            logger.info("Refreshing models");
             File[] models = modelsFolder.listFiles();
             loadingModels = true;
             try {
