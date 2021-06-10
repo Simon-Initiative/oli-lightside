@@ -36,16 +36,21 @@ import java.util.logging.Logger;
 public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     protected static Map<String, Predictor> predictors = new HashMap<String, Predictor>();
+    protected static Map<String, Predictor> predictors2 = new HashMap<String, Predictor>();
     protected static Set<String> processing = new HashSet<String>();
 
-    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    static {
+        long sleepTimeInMilli = 1000L * 20; // 5 seconds
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleWithFixedDelay(ServerOLI::pollDirectories, sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
+    }
 
-    private boolean loadingModels = false;
+    static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+    private static boolean loadingModels = false;
 
     public ServerOLI() {
-        long sleepTimeInMilli = 1000L * 10; // 5 seconds
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleWithFixedDelay(this::pollDirectories, sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
+
     }
 
     @Override
@@ -85,7 +90,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
      * @param modelPath
      * @return
      */
-    protected  Predictor attachModel(String modelPath) {
+    protected static Predictor attachModel(String modelPath) {
         try {
             logger.info("attaching " + modelPath);
             return new Predictor(modelPath, "class");
@@ -134,7 +139,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         try {
             Map<String, String> attribs = requestAttributes(request);
             String sample = attribs.get("sample").trim();
-            String answer = "";
+            StringBuilder answer = new StringBuilder();
             String model = attribs.get("model").trim();
 
             logger.info("using model " + model + " on " + sample);
@@ -148,16 +153,16 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             List<String> instances = new ArrayList<String>();
             instances.add(sample);
             for (Comparable label : predictor.predict(instances)) {
-                answer += label + " ";
+                answer.append(label).append(" ");
             }
 
-            answer = answer.trim();
+            answer = new StringBuilder(answer.toString().trim());
 
-            if (answer.isEmpty()) {
+            if (answer.length() == 0) {
                 throw new RequestException(HttpResponseStatus.INTERNAL_SERVER_ERROR, "Empty answer");
             }
 
-            return answer;
+            return answer.toString();
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -185,7 +190,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         return attribs;
     }
 
-    protected Predictor checkModel(String model) {    // attempt to attach a local model
+    protected static Predictor checkModel(String model) {    // attempt to attach a local model
         File ft = new File(model);
         model = ft.getName();
         if (predictors.containsKey(model)) {
@@ -212,7 +217,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         return attached;
     }
 
-    private void pollDirectories() {
+    private static void pollDirectories() {
         File modelsFolder = new File("/models");
         if (modelsFolder.exists() && !loadingModels) {
             File[] models = modelsFolder.listFiles();
@@ -220,15 +225,20 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             try {
                 for (File model : models) {
                     if (model.isFile()) {
-                        try {
-                            checkModel(model.getName());
-                        } catch (Exception e) {
-                            logger.log(Level.SEVERE, e.getLocalizedMessage());
-                        }
+                        Predictor attached = attachModel(model.getAbsolutePath());
+                        predictors2.put(model.getName(), attached);
+//                        try {
+//                            checkModel(model.getName());
+//                        } catch (Exception e) {
+//                            logger.log(Level.SEVERE, e.getLocalizedMessage());
+//                        }
                     }
                 }
             } finally {
                 loadingModels = false;
+                predictors.clear();
+                predictors.putAll(predictors2);
+                predictors2.clear();
             }
         }
     }
