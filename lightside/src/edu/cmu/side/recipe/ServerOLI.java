@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     protected static Map<String, Predictor> predictors = new HashMap<String, Predictor>();
-    protected static Map<String, Predictor> predictors2 = new HashMap<String, Predictor>();
+//    protected static Map<String, Predictor> predictors2 = new HashMap<String, Predictor>();
     protected static Set<String> processing = new HashSet<String>();
 
     static {
@@ -226,20 +226,20 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             try {
                 for (File model : models) {
                     if (model.isFile()) {
-                        Predictor attached = attachModel(model.getAbsolutePath());
-                        predictors2.put(model.getName(), attached);
-//                        try {
-//                            checkModel(model.getName());
-//                        } catch (Exception e) {
-//                            logger.log(Level.SEVERE, e.getLocalizedMessage());
-//                        }
+//                        Predictor attached = attachModel(model.getAbsolutePath());
+//                        predictors2.put(model.getName(), attached);
+                        try {
+                            checkModel(model.getName());
+                        } catch (Exception e) {
+                            logger.log(Level.SEVERE, e.getLocalizedMessage());
+                        }
                     }
                 }
             } finally {
                 loadingModels = false;
-                predictors.clear();
-                predictors.putAll(predictors2);
-                predictors2.clear();
+//                predictors.clear();
+//                predictors.putAll(predictors2);
+//                predictors2.clear();
             }
         }
     }
