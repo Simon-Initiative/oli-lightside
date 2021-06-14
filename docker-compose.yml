@@ -11,6 +11,8 @@ services:
       - /oli/superactivity/lightside/toolkits/categories:/lightside/toolkits/categories
     ports:
       - "8300:8000"
+      - "9010:9010"
+      - "9011:9011"
     networks:
       - lightside-net
 networks:
