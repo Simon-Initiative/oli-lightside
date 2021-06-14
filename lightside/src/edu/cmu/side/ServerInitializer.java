@@ -10,7 +10,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 public class ServerInitializer extends ChannelInitializer<Channel> {
-    EventExecutorGroup separateExecutorGroup = new DefaultEventExecutorGroup(2);
+    EventExecutorGroup separateExecutorGroup = new DefaultEventExecutorGroup(10);
     @Override
     protected void initChannel(Channel ch) {
         ChannelPipeline pipeline = ch.pipeline();
