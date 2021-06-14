@@ -10,6 +10,6 @@ RUN chmod +x /lightside/runserver.sh
 
 WORKDIR /lightside/
 
-EXPOSE 8000
+EXPOSE 8000 9010 9011
 
 ENTRYPOINT /lightside/runserver.sh
