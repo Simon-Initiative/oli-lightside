@@ -105,7 +105,7 @@ public class Predictor
 	 *         its predictions, so this might just be a single entry
 	 *         (predicted_label, 1.0)
 	 */
-	public List<? extends Comparable> predict(List<String> instances)
+	public synchronized List<? extends Comparable>  predict(List<String> instances)
 	{
 
 		DocumentList corpus = null;
