@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -97,7 +98,7 @@ public class Predictor
 
 	/**
 	 * 
-	 * @param instance
+	 * @param instances
 	 *            the string to classify.
 	 * 
 	 * @return a map of predicted category-labels to associated probabilities.
@@ -228,9 +229,11 @@ public class Predictor
 		try
 		{
 			Chef.quiet = isQuiet();
+//			final long then = System.nanoTime();
 			Recipe newRecipe = Chef.followRecipe(recipe, corpus, Stage.MODIFIED_TABLE, 0);
 			FeatureTable predictTable = newRecipe.getTrainingTable();
-
+//			final long millis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - then);
+//			System.out.println("followRecipe (ms): " + millis);
 			if (!isQuiet())
 			{
 				logger.info(predictTable.getFeatureSet().size() + " features total");

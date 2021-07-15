@@ -39,11 +39,11 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 //    protected static Map<String, Predictor> predictors2 = new HashMap<String, Predictor>();
     protected static Set<String> processing = new HashSet<String>();
 
-    static {
-        long sleepTimeInMilli = 1000L * 20; // 5 seconds
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleWithFixedDelay(ServerOLI::pollDirectories, sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
-    }
+//    static {
+//        long sleepTimeInMilli = 1000L * 20; // 5 seconds
+//        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+//        scheduler.scheduleWithFixedDelay(ServerOLI::pollDirectories, sleepTimeInMilli, sleepTimeInMilli, TimeUnit.MILLISECONDS);
+//    }
 
     static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -92,7 +92,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
      */
     protected static Predictor attachModel(String modelPath) {
         try {
-            logger.info("attaching " + modelPath);
+            logger.info("attaching is this coming from here" + modelPath);
             return new Predictor(modelPath, "class");
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -165,6 +165,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             return answer.toString();
 
         } catch (Exception e) {
+            e.printStackTrace();
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             throw new RequestException(HttpResponseStatus.BAD_REQUEST, "could not handle request: " + request.uri() +
                     "\n(urls should be of the form /predict)");
@@ -190,7 +191,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         return attribs;
     }
 
-    protected static Predictor checkModel(String model) {    // attempt to attach a local model
+    public static Predictor checkModel(String model) {    // attempt to attach a local model
         File ft = new File(model);
         model = ft.getName();
         if (predictors.containsKey(model)) {
@@ -201,6 +202,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
         processing.add(model);
 
+        logger.info("checkModel called");
         File f = new File("/models", model);
         Predictor attached = null;
         if (f.exists()) {
@@ -217,7 +219,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         return attached;
     }
 
-    private static void pollDirectories() {
+    public static void pollDirectories() {
         File modelsFolder = new File("/models");
         if (modelsFolder.exists() && !loadingModels) {
             logger.info("Refreshing models");
@@ -229,7 +231,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 //                        Predictor attached = attachModel(model.getAbsolutePath());
 //                        predictors2.put(model.getName(), attached);
                         try {
-                            checkModel(model.getName());
+                            ServerOLI.checkModel(model.getName());
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, e.getLocalizedMessage());
                         }

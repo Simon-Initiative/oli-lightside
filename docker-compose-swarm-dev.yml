@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  lightside:
+    image: 127.0.0.1:5000/lightside_stack
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    volumes:
+      - ./models:/models
+      - ./lightside/toolkits/categories:/lightside/toolkits/categories
+    ports:
+      - "8300:8000"
+

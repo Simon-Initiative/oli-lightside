@@ -26,3 +26,6 @@ nb-configuration.xml
 /nbproject/
 /docker-compose.override.yml
 /repository/
+/models/
+/amisc/
+/lightside/toolkits/categories/GN_Stretchy_Pattern_Categories_01-05-2017/

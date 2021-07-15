@@ -1,5 +1,6 @@
 package edu.cmu.side;
 
+import edu.cmu.side.recipe.ServerOLI;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -7,10 +8,18 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
+import java.util.concurrent.Executors;
+
 public class AppServer {
     private static final int HTTP_PORT = 8000;
 
     public void run() throws Exception {
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                ServerOLI.pollDirectories();
+            }
+        });
 
         // Create the multithreaded event loops for the server
         EventLoopGroup bossGroup = new NioEventLoopGroup();

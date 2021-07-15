@@ -7,6 +7,10 @@ See `copyright/gpl.txt` for more information.
 To build from source, use *ant*:
 
     ant build
+Or
+```
+./build.sh . 'ant'
+```
 
 This will compile the workbench and run a modest set of unit tests.
 
