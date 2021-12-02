@@ -188,6 +188,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             }
         }
+        postDecoder.destroy();   // fix for netty SEVERE LEAK error
         return attribs;
     }
 
