@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+  lightside:
+    build: .
+    image: 127.0.0.1:5000/lightside_stack
+    restart: always
+    container_name: oli-lightside
+    volumes:
+      - ./lightside/models:/models
+      - ./lightside/toolkits/categories:/lightside/toolkits/categories
+    ports:
+      - "8300:8000"
+      - "9010:9010"
+      - "9011:9011"
+    networks:
+      - lightside-net
+networks:
+  lightside-net:
+    driver: bridge
