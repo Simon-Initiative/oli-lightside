@@ -62,13 +62,17 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         try {
             String target = request.uri();
             logger.info(request.method() + ": " + target);
+            logger.info( "target: " + target);
 
-            if (target.endsWith("/predict")) {
+            if (target.startsWith("/predict")) {
+            	logger.info("calling handlePredict");
                 answer = handlePredict(request);
-            } else if (target.endsWith("/evaluate")) {
+            } else if (target.startsWith("/evaluate")) {
+            	logger.info("calling handleEvaluate");
                 answer = handleEvaluate(request);
             }
             if (answer == null) {
+            	logger.info("answer is null");
                 throw new RequestException(HttpResponseStatus.NOT_FOUND, "There is no data, only zuul.");
             }
 

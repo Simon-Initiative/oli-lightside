@@ -44,7 +44,8 @@ public class Predictor
 
 	// File name/location is defined in parameter map
 	Recipe recipe;
-	private boolean quiet = true;
+	// private boolean quiet = true;
+	private boolean quiet = false;
 	protected static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	StatusUpdater textUpdater = new StatusUpdater()

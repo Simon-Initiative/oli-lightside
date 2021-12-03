@@ -52,7 +52,8 @@ public class Chef
 	// "Running in headless mode." : "Not actually headless");
 	// }
 
-	static boolean quiet = true;
+	// static boolean quiet = true;
+	static boolean quiet = false;
 	static final protected Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	static StatusUpdater textUpdater = new StatusUpdater()
