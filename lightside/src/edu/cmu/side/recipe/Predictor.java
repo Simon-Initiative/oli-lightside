@@ -90,6 +90,7 @@ public class Predictor
 
 	public Predictor(String modelPath, String annotationName) throws IOException, FileNotFoundException
 	{
+        logger.info("Predictor.java constructor (modelPath, annotationName) :entering");
 		this.modelPath = modelPath;
 		this.predictionAnnotation = "predicted";
 		this.corpusCurrentAnnot = annotationName;
@@ -109,7 +110,7 @@ public class Predictor
 	 */
 	public synchronized List<? extends Comparable>  predict(List<String> instances)
 	{
-
+		logger.info("Predictor.predict(instances) - entering"); 
 		DocumentList corpus = null;
 		corpus = new DocumentList(instances);
 
@@ -226,10 +227,13 @@ public class Predictor
 	 */
 	public PredictionResult predict(DocumentList corpus)
 	{
+
+		logger.info("Predictor.predict(DocumentList corpus) - entering"); 
 		PredictionResult result = null;
 		try
 		{
-			Chef.quiet = isQuiet();
+//			Chef.quiet = isQuiet();
+			Chef.quiet = false; 
 //			final long then = System.nanoTime();
 			Recipe newRecipe = Chef.followRecipe(recipe, corpus, Stage.MODIFIED_TABLE, 0);
 			FeatureTable predictTable = newRecipe.getTrainingTable();
@@ -237,11 +241,20 @@ public class Predictor
 //			System.out.println("followRecipe (ms): " + millis);
 			if (!isQuiet())
 			{
-				logger.info(predictTable.getFeatureSet().size() + " features total");
-				logger.info(predictTable.getHitsForDocument(0).size() + " feature hits in document 0");
+				// These values aren't changing: "321 features total; 321 feature hits in document 0"
+				logger.info("Predictor.predict(DocList) - " + predictTable.getFeatureSet().size() + " features total");
+				logger.info("Predictor.predict(DocList) - " + predictTable.getHitsForDocument(0).size() + " feature hits in document 0");
 			}
 
-			result = predictFromTable(predictTable);
+			result = predictFromTable(predictTable);	
+			
+			// Attempts at clearing things 
+			predictTable = null; 
+			FeatureTable newRecipeFilteredTable = newRecipe.getFilteredTable();
+			newRecipeFilteredTable = null; 
+//			recipe = null; 			
+			
+			newRecipe = null; 
 		}
 		catch (Exception e)
 		{

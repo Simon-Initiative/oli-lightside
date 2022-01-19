@@ -3,6 +3,9 @@ package edu.cmu.side.recipe.converters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -20,6 +23,8 @@ import edu.cmu.side.model.feature.LocalFeatureHit.HitLocation;
 
 public class FeatureTableConverter implements Converter{
 
+    static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	
 	@Override
 	public boolean canConvert(Class clazz) {
 		return clazz.equals(FeatureTable.class);
@@ -109,6 +114,8 @@ public class FeatureTableConverter implements Converter{
 		
 	}
 	public void convertModel(FeatureTable table, HierarchicalStreamWriter writer, MarshallingContext context){
+
+        logger.info("FeatureTableConverter.convertModel - enter");
 		writer.addAttribute("type", "default");
 		
 		writer.startNode("name");
@@ -256,7 +263,8 @@ public class FeatureTableConverter implements Converter{
 	}
 	
 	private Object readDefault(HierarchicalStreamReader reader, UnmarshallingContext context){
-		
+
+        logger.info("FeatureTableConverter.readDefault - enter");		
 		reader.moveDown();
 		String tableName = reader.getValue();
 		reader.moveUp();

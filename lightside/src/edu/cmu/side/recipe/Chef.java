@@ -126,7 +126,9 @@ public class Chef
 
 	public static Recipe followSimmerSteps(Recipe originalRecipe, DocumentList corpus, Stage finalStage, int newThreshold)
 	{
+		logger.info("Chef.followSimmerSteps - ENTER");
 		Recipe newRecipe = Recipe.copyEmptyRecipe(originalRecipe);
+//		Recipe newRecipe = originalRecipe;
 
 		prepareDocumentList(originalRecipe, corpus);
 		newRecipe.setDocumentList(corpus);
@@ -231,6 +233,7 @@ public class Chef
 	public static void main(String[] args) throws Exception
 	{
 		quiet = false;
+		logger.info("Chef.main - ENTER");
 		String recipePath, outPath;
 		if (args.length < 5 || !Arrays.asList("predict", "full").contains(args[0]))
 		{

@@ -254,6 +254,7 @@ public class BuildModelControl extends GenesisControl
 
 	protected static FeatureTable prepareTestFeatureTable(Recipe recipe, DocumentList test, StatusUpdater updater)
 	{
+		logger.warning("BuildModelControl.prepareTestFeatureTable: ENTER");
 		prepareDocuments(test); // assigns classes, annotations.
 
 		Collection<FeatureHit> hits = new TreeSet<FeatureHit>();

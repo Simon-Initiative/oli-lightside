@@ -57,6 +57,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <compilerarg line="-encoding utf-8"/>
+            <!-- <compilerarg line="-encoding utf-8 -Xlint:unchecked"/> -->
             <src path="src"/>
         	
             <classpath refid="lightside.buildpath"/>
@@ -66,6 +67,7 @@
     <target depends="init" name="compile-tests">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <!-- <compilerarg line="-Xlint:unchecked"/> -->
             <src path="tests"/>
         	
             <classpath refid="lightside.testpath"/>
@@ -74,7 +76,7 @@
 	
     <target depends="compile" name="run">
         <java classname="edu.cmu.side.Workbench" failonerror="true" fork="yes">
-            <jvmarg line="-Xmx8G -Xdock:icon=toolkits/icons/bulbs/bulb_128.png -Xdock:name=LightSide -splash:toolkits/icons/logo.png -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode"/>
+            <jvmarg line="-Xmx8G -Xdock:icon=toolkits/icons/bulbs/bulb_128.png -Xdock:name=LightSide -splash:toolkits/icons/logo.png -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -Xlint:unchecked"/>
             <classpath refid="lightside.classpath"/>
         </java>
     </target>

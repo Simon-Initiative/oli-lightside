@@ -55,7 +55,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
-        logger.info("The url = " + request.uri());
+        logger.info("ServerOLI channelRead0(), url " + request.uri());
         String answer = "There is no data, only zuul.";
         HttpResponseStatus status = HttpResponseStatus.OK;
 
@@ -65,10 +65,10 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
             logger.info( "target: " + target);
 
             if (target.startsWith("/predict")) {
-            	logger.info("calling handlePredict");
+            	logger.info("ServerOLI channelRead0(), calling handlePredict");
                 answer = handlePredict(request);
             } else if (target.startsWith("/evaluate")) {
-            	logger.info("calling handleEvaluate");
+            	logger.info("ServerOLI channelRead0(), calling handleEvaluate");
                 answer = handleEvaluate(request);
             }
             if (answer == null) {
@@ -96,7 +96,7 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
      */
     protected static Predictor attachModel(String modelPath) {
         try {
-            logger.info("attaching is this coming from here" + modelPath);
+            logger.info("ServerOLI attachModel() - creating Predictor for model " + modelPath);
             return new Predictor(modelPath, "class");
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
@@ -141,14 +141,17 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     protected String handlePredict(FullHttpRequest request) throws RequestException {
         try {
+            logger.info("ServerOLI handlePredict() - entering");
             Map<String, String> attribs = requestAttributes(request);
             String sample = attribs.get("sample").trim();
+            logger.info("ServerOLI handlePredict() - sample = " + sample); 
             StringBuilder answer = new StringBuilder();
             String model = attribs.get("model").trim();
 
-            logger.info("using model " + model + " on " + sample);
+            logger.info("ServerOLI handlePredict() - using model " + model + " on " + sample);
             Predictor predictor = null;
             try {
+            	logger.info("ServerOLI handlePredict() - calling checkModel() with model to create predictor");
                 predictor = checkModel(model);
             } catch (Exception ex) {
                 throw new RequestException(HttpResponseStatus.BAD_REQUEST, ex.getLocalizedMessage());
@@ -156,10 +159,14 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
             List<String> instances = new ArrayList<String>();
             instances.add(sample);
+//            Integer i = 0;
             for (Comparable label : predictor.predict(instances)) {
+//            	i++; 
+            	logger.info("ServerOLI handlePredict() - from predictor.predict, appending label to answer: " + label); 
                 answer.append(label).append(" ");
             }
 
+        	logger.info("ServerOLI handlePredict() - answer = " + answer.toString()); 
             answer = new StringBuilder(answer.toString().trim());
 
             if (answer.length() == 0) {
@@ -197,18 +204,21 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     public static Predictor checkModel(String model) {    // attempt to attach a local model
+        logger.info("ServerOLI, entering checkModel()");
         File ft = new File(model);
         model = ft.getName();
         if (predictors.containsKey(model)) {
+        	logger.info("ServerOLI, checkModel(), predictors.containsKey(model) for model " + model + " -- Returning model"); 
             return predictors.get(model);
         }
         if (processing.contains(model)) {
             throw new RuntimeException("model still processing " + model);
         }
+        logger.info("ServerOLI, checkModel(): adding model to processing list");
         processing.add(model);
 
-        logger.info("checkModel called");
-        File f = new File("/models", model);
+        File f = new File("../models", model);
+        logger.info("ServerOLI checkModel() - model file path: " + f.getAbsolutePath());
         Predictor attached = null;
         if (f.exists()) {
             attached = attachModel(f.getAbsolutePath());

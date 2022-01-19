@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -59,6 +60,9 @@ public class Recipe implements Serializable
 	FeatureTable filteredTable;
 	TrainingResult trainedModel;
 	PredictionResult predictionResult;
+	
+	protected static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	
 	
 	public RecipeManager.Stage getStage()
 	{
@@ -254,7 +258,7 @@ public class Recipe implements Serializable
 	public static Recipe addPluginsToRecipe(Recipe prior, Collection<? extends SIDEPlugin> next)
 	{
 
-		
+		logger.info("Recipe.addPluginsToRecipe - ENTER"); 
 		RecipeManager.Stage stage = prior.getStage();
 		Recipe newRecipe = fetchRecipe();
 
