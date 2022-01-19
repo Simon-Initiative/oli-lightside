@@ -3,7 +3,7 @@ package edu.cmu.side.model.feature;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 /**
  *  A feature hit with a particular location within a document
@@ -15,7 +15,7 @@ public class LocalFeatureHit extends FeatureHit
 	 * end - start = length of hit.
 	 */
 	private Collection<HitLocation> hits;
-	protected static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+//	protected static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
 	public static class HitLocation implements Serializable
 	{
@@ -27,7 +27,7 @@ public class LocalFeatureHit extends FeatureHit
 		public HitLocation(String column, int start, int end)
 		{	
 			super();
-	        logger.info("LocalFeatureHit.java: Entered constructor #1");
+//	        logger.info("LocalFeatureHit.java: Entered constructor #1");
 			this.start = start;
 			this.end = end;
 			this.column = column;
@@ -57,14 +57,14 @@ public class LocalFeatureHit extends FeatureHit
 	public LocalFeatureHit(Feature feature, Object value, int documentIndex, Collection<HitLocation> hits)
 	{
 		super(feature, value, documentIndex);
-        logger.info("LocalFeatureHit.java: Entered constructor #2");
+//        logger.info("LocalFeatureHit.java: Entered constructor #2");
 		this.hits = hits;
 	}
 	
 	public LocalFeatureHit(Feature feature, Object value, int documentIndex, String column, int start, int end)
 	{
 		super(feature, value, documentIndex);
-        logger.info("LocalFeatureHit.java: Entered constructor #3");
+//        logger.info("LocalFeatureHit.java: Entered constructor #3");
 		hits = new ArrayList<HitLocation>();
 		addHit(column, start, end);
 	}
@@ -98,7 +98,7 @@ public class LocalFeatureHit extends FeatureHit
 	{
 //        Class myClass = Class.forName("LocalFeatureHit");
 //        logger.info("LocalFeatureHit.java, addHit - enclosingclass:" + myClass.getEnclosingMethod() + " - Column:" + column + " Start:" + String.valueOf(start) + " End:" + String.valueOf(end));      
-        logger.info("LocalFeatureHit.java, addHit - Column:" + column + " Start:" + String.valueOf(start) + " End:" + String.valueOf(end));      
+//        logger.info("LocalFeatureHit.java, addHit - Column:" + column + " Start:" + String.valueOf(start) + " End:" + String.valueOf(end));      
  		hits.add(new HitLocation(column, start, end));
 	}
 }
