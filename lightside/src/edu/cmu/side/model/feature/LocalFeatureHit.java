@@ -57,15 +57,25 @@ public class LocalFeatureHit extends FeatureHit
 	public LocalFeatureHit(Feature feature, Object value, int documentIndex, Collection<HitLocation> hits)
 	{
 		super(feature, value, documentIndex);
-//        logger.info("LocalFeatureHit.java: Entered constructor #2");
+//        logger.info("LocalFeatureHit.java: Entered constructor #1");
 		this.hits = hits;
 	}
 	
 	public LocalFeatureHit(Feature feature, Object value, int documentIndex, String column, int start, int end)
 	{
 		super(feature, value, documentIndex);
-//        logger.info("LocalFeatureHit.java: Entered constructor #3");
-		hits = new ArrayList<HitLocation>();
+//        System.out.println("LocalFeatureHit.java: Entered constructor #2");
+//		System.out.println("LocalFeatureHit constructor #2 caller: "); 
+//		try
+//		{
+//			System.out.println("   class:  " + Class.forName(Thread.currentThread().getStackTrace()[2].getClassName()));
+//			System.out.println("   method: " + Class.forName(Thread.currentThread().getStackTrace()[2].getMethodName()));
+//		}
+//		catch (Exception e)
+//		{
+//			e.printStackTrace();
+//		}
+		hits = new ArrayList<HitLocation>();    // IS THIS NECESSARY ???
 		addHit(column, start, end);
 	}
 	
@@ -96,9 +106,6 @@ public class LocalFeatureHit extends FeatureHit
 
 	public void addHit(String column, int start, int end)
 	{
-//        Class myClass = Class.forName("LocalFeatureHit");
-//        logger.info("LocalFeatureHit.java, addHit - enclosingclass:" + myClass.getEnclosingMethod() + " - Column:" + column + " Start:" + String.valueOf(start) + " End:" + String.valueOf(end));      
-//        logger.info("LocalFeatureHit.java, addHit - Column:" + column + " Start:" + String.valueOf(start) + " End:" + String.valueOf(end));      
  		hits.add(new HitLocation(column, start, end));
 	}
 }

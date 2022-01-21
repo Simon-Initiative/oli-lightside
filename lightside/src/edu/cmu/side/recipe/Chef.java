@@ -109,7 +109,12 @@ public class Chef
 		if (!quiet) logger.info("Chef: Building feature table...");
 
 		FeatureTable ft = new FeatureTable(corpus, hits, threshold, annotation, type);
+		
+		logger.info("Chef, simmerFeatures - FeatureTable size: " + ft.getSize());
+		logger.info("Chef, simmerFeatures - FeatureTable hits: " + String.valueOf(ft.getHitsForDocument(0).size()));
+		
 		recipe.setFeatureTable(ft);
+		hits.clear(); 
 
 		if (!quiet) logger.info("Chef: Done building feature table!");
 		if (finalStage.compareTo(Stage.MODIFIED_TABLE) >= 0) 
@@ -122,12 +127,16 @@ public class Chef
 			recipe.setFilteredTable(ft);
 		}
 		ft.setName(recipe.getRecipeName() + " features");
+//		logger.info("Chef, simmerFeatures - Recipe name = " + recipe.getRecipeName());
+//		logger.info("Chef, simmerFeatures - FeatureTable name = " + ft.getName());
 	}
 
 	public static Recipe followSimmerSteps(Recipe originalRecipe, DocumentList corpus, Stage finalStage, int newThreshold)
 	{
 		logger.info("Chef.followSimmerSteps - ENTER");
-		Recipe newRecipe = Recipe.copyEmptyRecipe(originalRecipe);
+//		Recipe newRecipe = Recipe.copyEmptyRecipe(originalRecipe);
+		
+		Recipe newRecipe = Recipe.copyPredictionRecipe(originalRecipe);
 //		Recipe newRecipe = originalRecipe;
 
 		prepareDocumentList(originalRecipe, corpus);

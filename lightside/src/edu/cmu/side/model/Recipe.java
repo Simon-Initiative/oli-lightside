@@ -252,6 +252,7 @@ public class Recipe implements Serializable
 	}
 
 	public static Recipe fetchRecipe(){
+		logger.info("Recipe.fetchRecipe - ADDING RECIPE"); 
 		return new Recipe();
 	}
 
@@ -296,6 +297,9 @@ public class Recipe implements Serializable
 	public static Recipe copyPredictionRecipe(Recipe prior)
 	{
 		Recipe newRecipe = fetchRecipe();
+		
+
+		logger.info("\nRecipe.copyPredictionRecipe - prior recipe hash: " + String.valueOf(prior.hashCode()) + " - newRecipe hash: " + String.valueOf(newRecipe.hashCode()) + "\n"); 
 		
 		DocumentList dummyDocs = createDummyDocs(prior);
 		

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Iterator;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -25,6 +27,11 @@ import edu.cmu.side.model.data.PredictionResult;
 import edu.cmu.side.plugin.control.ImportController;
 import edu.cmu.side.view.util.CSVExporter;
 import edu.cmu.side.view.util.DocumentListTableModel;
+
+import edu.cmu.side.model.feature.Feature;
+import edu.cmu.side.model.feature.FeatureHit;
+import edu.cmu.side.model.feature.LocalFeatureHit; 
+import edu.cmu.side.model.feature.LocalFeatureHit.HitLocation; 
 
 /**
  * loads a model trained using lightSIDE uses it to label new instances.
@@ -135,8 +142,10 @@ public class Predictor
 	public DocumentList predict(DocumentList corpus, String predictionColumn, boolean addDistributionColumns, boolean overWrite)
 	{
 
+		logger.info("Predictor.predict(DocumentList corpus, String predictionColumn, ...) - entering"); 
 		PredictionResult result = null;
 		Recipe newRecipe = null;
+		
 		try
 		{
 			Chef.quiet = isQuiet();
@@ -158,6 +167,15 @@ public class Predictor
 			// List<String>>(newDocs.getCoveredTextList()), new TreeMap<String,
 			// List<String>>(newDocs.allAnnotations()),
 			// predictTable.getAnnotation());
+			
+			predictTable = null; 
+			newRecipe = null; 
+			
+//			ft = recipe.getFeatureTable(); 
+//			Set<String> ftKeys = map.keySet();
+//			
+//			rt = recipe.getFilteredTable(); 
+//			logger.info(predictTable.getFeatureSet().size() + " features total");
 
 			return Predictor.addPredictionsToDocumentList(predictionColumn, addDistributionColumns, overWrite, result, newDocs);
 		}
@@ -167,6 +185,8 @@ public class Predictor
 		}
 		return null;
 	}
+	
+
 
 	public static DocumentList addPredictionsToDocumentList(String predictionColumn, boolean addDistributionColumns, boolean overWrite, PredictionResult result,
 			DocumentList newDocs)
@@ -247,7 +267,19 @@ public class Predictor
 			}
 
 			result = predictFromTable(predictTable);	
-			
+
+			FeatureTable newFeatureTable = recipe.getFeatureTable(); 
+			System.out.println("\n\nNEW Recipe - Feature Table: "); 
+			featureTableSpecs(newFeatureTable); 
+
+			FeatureTable newFilteredTable = recipe.getFilteredTable(); 
+			if (newFilteredTable != null) {
+				System.out.println("\n\nNEW Recipe - Filtered Table: "); 
+				featureTableSpecs(newFilteredTable); 
+			} else {
+				System.out.println("\nNEW Recipe - Filtered Table is null\n"); 
+			}			
+						
 			// Attempts at clearing things 
 			predictTable = null; 
 			FeatureTable newRecipeFilteredTable = newRecipe.getFilteredTable();
@@ -261,9 +293,54 @@ public class Predictor
 			e.printStackTrace();
 		}
 
+		FeatureTable featureTable = recipe.getFeatureTable(); 
+		System.out.println("\n\nRecipe - Feature Table: "); 
+		featureTableSpecs(featureTable); 
+
+		FeatureTable filteredTable = recipe.getFilteredTable(); 
+		if (filteredTable != null) {
+			System.out.println("\n\nRecipe - Filtered Table: "); 
+			featureTableSpecs(filteredTable); 
+		} else {
+			System.out.println("\nRecipe - Filtered Table is null\n"); 
+		}
+			
 		return result;
 	}
 
+	public void featureTableSpecs(FeatureTable ft)  
+	{
+		Set<Feature> ftFeatureSet = ft.getFeatureSet();	
+		System.out.println("  Num Features / hitsPerFeature " + String.valueOf(ftFeatureSet.size()));
+					
+		Iterator<Feature> ftFeatureSetIterator = ftFeatureSet.iterator();  
+		Integer totalNumHits = 0;
+		Integer totalNumHitLocations = 0; 
+		while (ftFeatureSetIterator.hasNext())
+		{
+			Feature feature = ftFeatureSetIterator.next(); 
+			Collection<FeatureHit> featureHits = ft.getHitsForFeature(feature); 
+			Integer numFeatureHits = featureHits.size(); 
+			totalNumHits += numFeatureHits; 
+//			System.out.println("    Feature: " + feature.getFeatureName() + "  - numFeatureHits:" + String.valueOf(numFeatureHits));
+			
+			Iterator<FeatureHit> featureHitIterator = featureHits.iterator();
+			while (featureHitIterator.hasNext())
+			{
+				LocalFeatureHit localFeatureHit = (LocalFeatureHit)featureHitIterator.next(); 
+				Collection<HitLocation> featureHitLocations = localFeatureHit.getHits(); 
+				Integer numHitLocations = featureHitLocations.size(); 
+				totalNumHitLocations += numHitLocations; 
+//				System.out.println("      Feature Hit Num Locations: " + String.valueOf(numHitLocations));
+			}
+		}
+		System.out.println("  Total Feature Hits: " + String.valueOf(totalNumHits));
+		System.out.println("  Total Hit Locations: " + String.valueOf(totalNumHitLocations));
+			
+		// Analyze localFeatures as well 
+		
+	}	
+	
 	public PredictionResult predictFromTable(FeatureTable predictTable) throws Exception
 	{
 		PredictionResult result = null;

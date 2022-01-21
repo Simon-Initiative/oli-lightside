@@ -207,6 +207,16 @@ public class ServerOLI  extends SimpleChannelInboundHandler<FullHttpRequest> {
         logger.info("ServerOLI, entering checkModel()");
         File ft = new File(model);
         model = ft.getName();
+        
+        
+        logger.info("ServerOLI, checkModel() - num(predictors) = " + String.valueOf(predictors.size()));
+    	for (Map.Entry<String, Predictor> entry : predictors.entrySet()) {
+    		String k = entry.getKey();
+    		System.out.println("     checkModel() - Key: " + k);
+    	}        
+        logger.info("\nServerOLI, checkModel() - num(processing) = " + String.valueOf(processing.size()) + "\n");        
+		System.out.println("     checkModel() - processing: " + processing);
+               
         if (predictors.containsKey(model)) {
         	logger.info("ServerOLI, checkModel(), predictors.containsKey(model) for model " + model + " -- Returning model"); 
             return predictors.get(model);
