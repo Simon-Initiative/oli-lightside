@@ -314,6 +314,7 @@ public class ExtractFeaturesControl extends GenesisControl{
 		@Override
 		protected void doTask()
 		{	
+			System.out.println("\n\nExtractFeaturesControl.java, doTask - ENTER\n\n");
 			try
 			{
 				// System.out.println("EFC 289: extracting features for new feature table. Annotation "+selectedClassAnnotation+", type "+selectedClassType);
@@ -334,6 +335,7 @@ public class ExtractFeaturesControl extends GenesisControl{
 					ft.setName(name);
 					plan.setFeatureTable(ft);
 				}
+				hits.clear();
 			}
 			catch (Exception e)
 			{
