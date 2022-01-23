@@ -27,7 +27,6 @@ public class LocalFeatureHit extends FeatureHit
 		public HitLocation(String column, int start, int end)
 		{	
 			super();
-//	        logger.info("LocalFeatureHit.java: Entered constructor #1");
 			this.start = start;
 			this.end = end;
 			this.column = column;
