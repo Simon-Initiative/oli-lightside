@@ -14,6 +14,12 @@ services:
       - "9011:9011"
     networks:
       - lightside-net
+    logging:
+      driver: syslog
+      options:
+        syslog-address: udp://localhost:514
+        syslog-facility: local1
+        tag: "oli-lightside"
 networks:
   lightside-net:
     driver: bridge
